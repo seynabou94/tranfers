@@ -2,12 +2,16 @@
 
 namespace App\Entity;
 
+use App\Entity\Partenaire;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ApiResource()
+ * @ApiResource( iri="http://schema.org/user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface
@@ -24,7 +28,7 @@ class User implements UserInterface
      */
     private $username;
 
-   
+
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
@@ -40,17 +44,43 @@ class User implements UserInterface
      * @ORM\Column(type="boolean")
      */
     private $isActif;
-   /**
+    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Role", inversedBy="users")
      */
-    private $roles =[];
+    private $role;
+    private $roles = [];
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="users")
+     */
+    private $parte;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Compte", mappedBy="user")
+     */
+    private $comptes;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Depot", mappedBy="user")
+     */
+    private $depots;
+    /**
+     * @var MediaObject|null
+     *
+     * @ORM\ManyToOne(targetEntity=MediaObject::class)
+     * @ORM\JoinColumn(nullable=true)
+     * @ApiProperty(iri="http://schema.org/image")
+     */
+    public $image;
 
     public function __construct()
     {
 
         $this->isActif = true;
+        $this->comptes = new ArrayCollection();
+        $this->depots = new ArrayCollection();
     }
-   
+
     public function getId(): ?int
     {
         return $this->id;
@@ -132,17 +162,92 @@ class User implements UserInterface
         return $this;
     }
 
+    public function getRole(): ?Role
+    {
+        return $this->role;
+    }
+    public function setRole(?Role $role): self
+    {
+        $this->role = $role;
+
+        return $this;
+    }
     public function getRoles()
     {
-        return $this->roles =['ROLE_'.strtoupper($this->getRoles()->getLibelle())];
+        return $this->roles = ['ROLE_' . strtoupper($this->getRole()->getLibelle())];
     }
-     public function setRoles(?Role $roles): self
+
+    public function getParte(): ?Partenaire
     {
-        $this->roles = $roles;
+        return $this->parte;
+    }
+
+    public function setParte(?Partenaire $parte): self
+    {
+        $this->parte = $parte;
 
         return $this;
     }
 
-   
+    /**
+     * @return Collection|Compte[]
+     */
+    public function getComptes(): Collection
+    {
+        return $this->comptes;
+    }
 
+    public function addCompte(Compte $compte): self
+    {
+        if (!$this->comptes->contains($compte)) {
+            $this->comptes[] = $compte;
+            $compte->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompte(Compte $compte): self
+    {
+        if ($this->comptes->contains($compte)) {
+            $this->comptes->removeElement($compte);
+            // set the owning side to null (unless already changed)
+            if ($compte->getUser() === $this) {
+                $compte->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Depot[]
+     */
+    public function getDepots(): Collection
+    {
+        return $this->depots;
+    }
+
+    public function addDepot(Depot $depot): self
+    {
+        if (!$this->depots->contains($depot)) {
+            $this->depots[] = $depot;
+            $depot->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDepot(Depot $depot): self
+    {
+        if ($this->depots->contains($depot)) {
+            $this->depots->removeElement($depot);
+            // set the owning side to null (unless already changed)
+            if ($depot->getUser() === $this) {
+                $depot->setUser(null);
+            }
+        }
+
+        return $this;
+    }
 }

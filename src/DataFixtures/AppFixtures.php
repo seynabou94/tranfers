@@ -8,12 +8,10 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+
 class AppFixtures extends Fixture
 {
-    
-
     private $encoder;
-    
     public function __construct(UserPasswordEncoderInterface $encoder)
     {
         $this->encoder = $encoder;
@@ -33,7 +31,7 @@ class AppFixtures extends Fixture
         $role1= new Role();
         $role1->setLibelle("Caissier");
         $manager->persist($role1);
-
+      
         $role3= new Role();
         $role3->setLibelle("Partenaire");
         $manager->persist($role3);
@@ -44,7 +42,7 @@ class AppFixtures extends Fixture
         $user1->setNomcompl("zeyna");
         $user1->setIsActif(true);
         $user1->setUsername("admin");
-        $user1->setRoles($role);
+        $user1->setRole($role);
         $manager->persist($user1);
 
         $manager->flush();
