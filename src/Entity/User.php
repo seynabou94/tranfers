@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ApiResource( iri="http://schema.org/user")
+ * @ApiResource(iri="http://schema.org/user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface
@@ -73,12 +73,18 @@ class User implements UserInterface
      */
     public $image;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Trajaction", mappedBy="user")
+     */
+    private $trajactions;
+
     public function __construct()
     {
 
         $this->isActif = true;
         $this->comptes = new ArrayCollection();
         $this->depots = new ArrayCollection();
+        $this->trajactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -245,6 +251,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($depot->getUser() === $this) {
                 $depot->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Trajaction[]
+     */
+    public function getTrajactions(): Collection
+    {
+        return $this->trajactions;
+    }
+
+    public function addTrajaction(Trajaction $trajaction): self
+    {
+        if (!$this->trajactions->contains($trajaction)) {
+            $this->trajactions[] = $trajaction;
+            $trajaction->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrajaction(Trajaction $trajaction): self
+    {
+        if ($this->trajactions->contains($trajaction)) {
+            $this->trajactions->removeElement($trajaction);
+            // set the owning side to null (unless already changed)
+            if ($trajaction->getUser() === $this) {
+                $trajaction->setUser(null);
             }
         }
 

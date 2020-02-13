@@ -20,23 +20,29 @@ class UserVoter extends Voter
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
         $user = $token->getUser();
-        // if the user is anonymous, do not grant access
-        if (!$user instanceof UserInterface) {
+        // // if the user is anonymous, do not grant access
+              if (!$user instanceof UserInterface) {
             return false;
+         }
+         if($user->getRoles()[0] === 'ROLE_SUP_ADMIN'){
+        return true;
         }
-        if ($user->getRoles()==['ROLE_SUP_ADMIN'] || $user->getRoles()==['ROLE_ADMIN'] ) {
-            return true;
-        }
-        if ($user->getRoles()=='ROLE_CAISSIER' || $user->getRoles()=='ROLE_PARTENAIRE' ) {
-            return false;
-        }
+        // ... (check conditions and return true to grant permission) ...
         switch ($attribute) {
             case 'POST':
-               return ($user->getRoles()==['ROLE_SUP_ADMIN']
-               &&  $user->getRoles()==['ROLE_ADMIN']);
+             return $user->getRoles()[0] === 'ROLE_ADMIN' && 
+             (strtoupper($subject->getRole()->getlib())=== 'CAISSIER' ||
+              strtoupper($subject->getRole()->getlib())=== 'PARTENAIRE');
+                break;
+            case 'POST_VIEW':
+                // logic to determine if the user can VIEW
+                if($user->getRoles()[0]==="ROLE_CAISSIER"){
+                    return false;
+                }   
+                break;   
+            default:
                 break;
         }
-
         return false;
     }
 }

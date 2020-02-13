@@ -14,11 +14,14 @@ class UserDatePersister implements DataPersisterInterface
 
     public function __construct(EntityManagerInterface $entityManager, UserPasswordEncoderInterface $userPasswordEncoder)
     {
+        
         $this->userPasswordEncoder = $userPasswordEncoder;
         $this->entityManager = $entityManager;
     }
     public function supports($data): bool
     {
+        //
+        
         return $data instanceof User;
      }
     /**
@@ -27,6 +30,7 @@ class UserDatePersister implements DataPersisterInterface
     public function persist($data)
     {
         
+        
         if ($data->getPassword()) {
             $data->setPassword(
 
@@ -34,7 +38,9 @@ class UserDatePersister implements DataPersisterInterface
             );
             $data->eraseCredentials();
         }
+        
         $this->entityManager->persist($data);
+     
         $this->entityManager->flush();
     }  
     
